@@ -81,7 +81,7 @@ class TableRuleTest extends ParserTestCase
     }
 
     #[Test]
-    public function test_alignment_without_outer_pipes(): void
+    public function test_alignment_without_spaces_or_trailing_pipe(): void
     {
         $html =
             (string) new Parser(highlighter: null, rules: [new TableRule()])->parse(
@@ -90,6 +90,20 @@ class TableRuleTest extends ParserTestCase
 
         $this->assertSame(
             '<table><thead><tr><th align="center">A</th><th align="right">B</th></tr></thead><tbody><tr><td align="center">1</td><td align="right">2</td></tr></tbody></table>',
+            $html,
+        );
+    }
+
+    #[Test]
+    public function test_only_the_row_after_the_header_is_a_separator(): void
+    {
+        $html =
+            (string) new Parser(highlighter: null, rules: [new TableRule()])->parse(
+                "| A |\n| :--- |\n| 1 |\n| --- |\n| 2 |",
+            );
+
+        $this->assertSame(
+            '<table><thead><tr><th align="left">A</th></tr></thead><tbody><tr><td align="left">1</td></tr><tr><td align="left">---</td></tr><tr><td align="left">2</td></tr></tbody></table>',
             $html,
         );
     }

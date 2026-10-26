@@ -50,18 +50,20 @@ final class TableRule implements Rule, ProvidesFirstChar
         $line = $parser->consumeUntil(Parser::NEW_LINE);
         $parser->consumeWhile(Parser::NEW_LINE);
 
-        // Filter out separator rows
-        $isSeparator = trim($line, ':| -') === '' && str_contains($line, '-');
-
         $token = $parser->lastToken;
 
+        // Only the row right after the header is a separator, later rows that look like one are data rows
+        $isSeparator =
+            $token instanceof TableToken
+            && $token->alignments === []
+            && trim($line, ':| -') === ''
+            && str_contains($line, '-');
+
         if ($isSeparator) {
-            if ($token instanceof TableToken) {
-                $token->alignments = array_map(
-                    $this->alignment(...),
-                    $this->cells($line),
-                );
-            }
+            $token->alignments = array_map(
+                $this->alignment(...),
+                $this->cells($line),
+            );
 
             return null;
         }
